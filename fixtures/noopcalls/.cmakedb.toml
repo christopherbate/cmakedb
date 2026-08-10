@@ -1,0 +1,3 @@
+# Restrict lint to the rule under test (noopcalls_e2e.rs).
+[lint]
+enable = ["noop-calls"]

@@ -1,0 +1,10 @@
+[package]
+name = "cmakedb-patch"
+description = "AST-anchored edits and (future) codemod verification loop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true

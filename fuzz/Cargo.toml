@@ -1,0 +1,31 @@
+[package]
+name = "cmakedb-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+cmakedb-syntax = { path = "../crates/cmakedb-syntax" }
+cmakedb-db = { path = "../crates/cmakedb-db" }
+
+# Detached from the root workspace so nightly-only fuzz builds never
+# affect the stable workspace.
+[workspace]
+
+[[bin]]
+name = "parse_roundtrip"
+path = "fuzz_targets/parse_roundtrip.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "trace_ingest"
+path = "fuzz_targets/trace_ingest.rs"
+test = false
+doc = false
+bench = false

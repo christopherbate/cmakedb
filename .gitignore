@@ -1,0 +1,7 @@
+/target
+fixtures/*/build/
+fixtures/*/.cmakedb/
+/fuzz/target
+/fuzz/corpus
+/fuzz/artifacts
+/.claude/

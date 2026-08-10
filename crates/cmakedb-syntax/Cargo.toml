@@ -1,0 +1,13 @@
+[package]
+name = "cmakedb-syntax"
+description = "L1 syntax layer: lossless CMake ASTs, node IDs, variable-reference extraction"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+sha2.workspace = true
+tree-sitter.workspace = true
+tree-sitter-cmake.workspace = true

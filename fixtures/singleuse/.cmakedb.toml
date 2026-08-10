@@ -1,0 +1,3 @@
+# Restrict lint to the rule under test (singleuse_e2e.rs).
+[lint]
+enable = ["single-use-variables"]

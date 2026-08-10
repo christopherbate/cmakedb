@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: fmt + clippy
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # The test suite records real cmake configures (design §6.1): it needs
+      # cmake >= 3.20 and ninja on PATH.
+      - name: Install ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Install ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+      - run: cmake --version && ninja --version
+      - run: cargo build --workspace --locked
+      - run: cargo test --workspace --locked
+      - name: Ingestion throughput floor (§6.6)
+        if: matrix.os == 'ubuntu-24.04'
+        run: cargo test --release --locked -p cmakedb-db --test perf_floor -- --ignored --nocapture
+
+  # Oldest-supported CMake (§5.4): the modern leg above runs whatever the
+  # runner image ships; this leg pins the floor. Divergence here means the
+  # trace format or File API drifted.
+  cmake-compat:
+    name: cmake ${{ matrix.cmake }} (oldest supported)
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        cmake: ["3.25.3"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Install pinned CMake
+        run: |
+          curl -sL -o cmake.tar.gz \
+            https://github.com/Kitware/CMake/releases/download/v${{ matrix.cmake }}/cmake-${{ matrix.cmake }}-linux-x86_64.tar.gz
+          tar xzf cmake.tar.gz
+          echo "$PWD/cmake-${{ matrix.cmake }}-linux-x86_64/bin" >> $GITHUB_PATH
+      - run: cmake --version
+      - run: cargo test --workspace --locked
+
+  # Experimental: cmakedb has never been exercised on Windows (§6.5 path
+  # audit is open). Non-blocking; failures here are data, not gate.
+  windows-experimental:
+    name: test (windows, experimental)
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: choco install ninja -y
+      - run: cmake --version && ninja --version
+      - run: cargo test --workspace --locked
