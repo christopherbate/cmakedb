@@ -260,3 +260,57 @@ fn severity_overrides_apply_to_output_and_gate() {
     assert!(err.contains("dead-options"), "{err}");
     assert!(err.contains("unknown severity"), "{err}");
 }
+
+/// `--no-user-passes` is the trust escape hatch for linting a repository
+/// you do not control (SECURITY.md): user passes are SQL supplied by the
+/// analyzed tree, so the flag must suppress them while leaving the
+/// built-ins untouched. The decision is deliberately CLI-only — a
+/// `.cmakedb.toml` setting could not be trusted, because that file ships
+/// in the same untrusted tree.
+#[test]
+fn no_user_passes_skips_tree_supplied_sql() {
+    let tmp = tempfile::tempdir().unwrap();
+    let src = stage("provenance", tmp.path());
+    let db = record(&src);
+    let dbs = db.to_string_lossy().into_owned();
+
+    std::fs::create_dir_all(src.join(".cmakedb/passes")).unwrap();
+    std::fs::write(
+        src.join(".cmakedb/passes/untrusted.sql"),
+        "-- stands in for a pass shipped by a repository we do not trust\n\
+         SELECT f.path AS file, e.line AS line,\n\
+                'user pass executed' AS message\n\
+         FROM events e JOIN files f ON f.id = e.file_id\n\
+         WHERE e.cmd_lower = 'project' AND f.in_source = 1;\n",
+    )
+    .unwrap();
+
+    let count = |args: &[&str]| -> (usize, usize) {
+        let out = cmakedb(&src, args);
+        let v: serde_json::Value = serde_json::from_str(&stdout(&out)).expect("json");
+        let all = findings(&v);
+        let user = all
+            .iter()
+            .filter(|f| f["rule"].as_str() == Some("untrusted"))
+            .count();
+        (all.len(), user)
+    };
+
+    // Default: the tree's pass runs.
+    let (total_with, user_with) = count(&["--db", &dbs, "lint", "--format", "json"]);
+    assert_eq!(user_with, 1, "user pass should run by default");
+
+    // With the flag: its findings are gone, and only its findings.
+    let (total_without, user_without) =
+        count(&["--db", &dbs, "lint", "--format", "json", "--no-user-passes"]);
+    assert_eq!(user_without, 0, "user pass must not run under the flag");
+    assert!(
+        total_without > 0,
+        "built-in passes must still run under the flag"
+    );
+    assert_eq!(
+        total_without,
+        total_with - user_with,
+        "the flag must drop exactly the user-pass findings"
+    );
+}

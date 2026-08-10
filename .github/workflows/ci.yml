@@ -21,6 +21,30 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
 
+  # Supply chain: license policy + RUSTSEC advisories (deny.toml). This is
+  # the gate that catches a dependency going vulnerable without anyone
+  # watching — deny.toml's ignore list is deliberately empty.
+  deny:
+    name: cargo-deny (licenses + advisories)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
+
+  # Minimum supported Rust version, declared in workspace.package. Checked
+  # rather than tested: the point is that the crate still compiles on the
+  # floor, and dev-dependencies may legitimately want more.
+  msrv:
+    name: msrv (rust 1.95)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --locked
+
   test:
     name: test (${{ matrix.os }})
     strategy:

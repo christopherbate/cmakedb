@@ -32,6 +32,8 @@ pub struct MatrixArgs {
     pub output: Option<PathBuf>,
     pub fail_on: Option<String>,
     pub path: Vec<String>,
+    /// Trust policy for user passes; see `crate::UserPasses`.
+    pub user_passes: crate::UserPasses,
 }
 
 struct PresetOutcome {
@@ -112,7 +114,7 @@ pub fn run_matrix(args: MatrixArgs) -> Result<i32> {
     // with every other successful one (same identity as `lint --also`).
     let db = Db::open(&ok[0].db_path)?;
     let also: Vec<PathBuf> = ok[1..].iter().map(|o| o.db_path.clone()).collect();
-    let mut findings = crate::run_enabled_passes(&db, &cfg)?;
+    let mut findings = crate::run_enabled_passes(&db, &cfg, args.user_passes)?;
     crate::filter_findings(&mut findings, &args.path);
     crate::intersect_with_recordings(&mut findings, &also, &cfg, None)?;
     crate::apply_severity_overrides(&mut findings, &cfg)?;

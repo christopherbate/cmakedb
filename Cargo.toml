@@ -13,6 +13,13 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
+# Verified by building the workspace on each toolchain: 1.94 fails, 1.95
+# passes. The floor is set by `libsqlite3-sys`, whose build script uses
+# `cfg_select!`; note that several dependencies (including `cc`) declare
+# a far lower `rust-version` than they actually require, so this number
+# comes from testing rather than from dependency metadata. CI pins a leg
+# to it.
+rust-version = "1.95"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/christopherbate/cmakedb"
 

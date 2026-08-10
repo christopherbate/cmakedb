@@ -246,6 +246,11 @@ enum Command {
         /// without --baseline.
         #[arg(long)]
         write_baseline: Option<PathBuf>,
+        /// Skip user passes (`.cmakedb/passes/*.sql`) and run only the
+        /// built-ins. Use when linting a repository you do not trust:
+        /// user passes are SQL supplied by the tree being analyzed.
+        #[arg(long)]
+        no_user_passes: bool,
     },
     /// Record every configure preset and lint the multi-config
     /// intersection (the user guide's multi-configuration workflow in one
@@ -276,6 +281,11 @@ enum Command {
         /// (repeatable). fail-on applies to the filtered set.
         #[arg(long)]
         path: Vec<String>,
+        /// Skip user passes (`.cmakedb/passes/*.sql`) and run only the
+        /// built-ins. Use when linting a repository you do not trust:
+        /// user passes are SQL supplied by the tree being analyzed.
+        #[arg(long)]
+        no_user_passes: bool,
     },
     /// Compare two recordings (presets, commits).
     Diff {
@@ -684,10 +694,12 @@ fn run(cli: Cli) -> Result<i32> {
             also,
             baseline: baseline_path,
             write_baseline,
+            no_user_passes,
         } => {
             let db = open_db(&cli.db)?;
             let cfg = Config::load(&std::env::current_dir()?)?;
-            let mut findings = run_enabled_passes(&db, &cfg)?;
+            let mut findings =
+                run_enabled_passes(&db, &cfg, UserPasses::from_flag(no_user_passes))?;
             filter_findings(&mut findings, &path);
             intersect_with_recordings(&mut findings, &also, &cfg, None)?;
             if let Some(bp) = &baseline_path {
@@ -729,6 +741,7 @@ fn run(cli: Cli) -> Result<i32> {
             output,
             fail_on,
             path,
+            no_user_passes,
         } => matrix::run_matrix(matrix::MatrixArgs {
             presets: preset,
             fail_fast,
@@ -736,6 +749,7 @@ fn run(cli: Cli) -> Result<i32> {
             output,
             fail_on,
             path,
+            user_passes: UserPasses::from_flag(no_user_passes),
         }),
 
         Command::Diff { db1, db2, format } => {
@@ -751,14 +765,42 @@ fn run(cli: Cli) -> Result<i32> {
     }
 }
 
-/// Run every enabled pass — built-ins plus user SQL passes — over one
-/// recording. Shared body of `lint` and `matrix`; filters, intersection,
-/// baselines and severity overrides are applied by the caller.
-fn run_enabled_passes(db: &Db, cfg: &Config) -> Result<Vec<Finding>> {
+/// Whether user-supplied passes from the analyzed tree may run.
+///
+/// Separate from `Config` on purpose: `.cmakedb.toml` and
+/// `.cmakedb/passes/` both live in the repository under analysis, so the
+/// trust decision belongs to whoever invoked cmakedb.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UserPasses {
+    Allow,
+    Skip,
+}
+
+impl UserPasses {
+    /// Map the `--no-user-passes` flag to the policy it selects.
+    pub fn from_flag(no_user_passes: bool) -> UserPasses {
+        if no_user_passes {
+            UserPasses::Skip
+        } else {
+            UserPasses::Allow
+        }
+    }
+}
+
+/// Run every enabled pass over one recording. Shared body of `lint` and
+/// `matrix`; filters, intersection, baselines and severity overrides are
+/// applied by the caller.
+///
+/// `user_passes` is a *caller* decision, never a config one: user passes
+/// are SQL files that live in the analyzed tree, so a recording of a
+/// hostile repository must not be able to opt itself back in.
+fn run_enabled_passes(db: &Db, cfg: &Config, user_passes: UserPasses) -> Result<Vec<Finding>> {
     let mut findings: Vec<Finding> = Vec::new();
     let mut passes = builtin_passes();
-    for sql in cfg.sql_passes()? {
-        passes.push(Box::new(sql));
+    if user_passes == UserPasses::Allow {
+        for sql in cfg.sql_passes()? {
+            passes.push(Box::new(sql));
+        }
     }
     for pass in passes {
         if !cfg.pass_enabled(pass.id()) {
