@@ -1,0 +1,58 @@
+{
+  "name": "cmakedb",
+  "displayName": "cmakedb",
+  "description": "Semantic CMake analysis from execution recordings: diagnostics, hover provenance, go-to-definition, verified codemods, and a link-provenance tree view.",
+  "version": "0.1.0",
+  "publisher": "cmakedb",
+  "license": "MIT OR Apache-2.0",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters", "Programming Languages"],
+  "main": "./extension.js",
+  "activationEvents": [
+    "workspaceContains:**/CMakeLists.txt"
+  ],
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "cmakedbProvenance",
+          "name": "CMake Provenance",
+          "contextualTitle": "cmakedb link provenance"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "cmakedb.why",
+        "title": "cmakedb: Why does a target link a library?"
+      },
+      {
+        "command": "cmakedb.refreshProvenance",
+        "title": "cmakedb: Refresh provenance tree",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "cmakedb.refreshProvenance",
+          "when": "view == cmakedbProvenance",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "cmakedb",
+      "properties": {
+        "cmakedb.serverPath": {
+          "type": "string",
+          "default": "cmakedb",
+          "description": "Path to the cmakedb binary (the extension runs `cmakedb lsp`)."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
+  }
+}

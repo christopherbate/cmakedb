@@ -1,0 +1,22 @@
+[package]
+name = "cmakedb-lsp"
+description = "Language server backed by a cmakedb recording (design §2.4)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tower-lsp = "0.20"
+tokio = { version = "1", features = ["rt-multi-thread", "io-std", "macros"] }
+cmakedb-db.workspace = true
+cmakedb-passes.workspace = true
+cmakedb-syntax.workspace = true
+rusqlite.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+cmakedb-record.workspace = true

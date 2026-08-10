@@ -1,0 +1,43 @@
+# cargo-deny configuration (`cargo deny check`).
+#
+# cmakedb itself is `MIT OR Apache-2.0` (see LICENSE-MIT / LICENSE-APACHE).
+# This file records which licenses the *dependency tree* may carry, so that
+# a new transitive dependency with incompatible terms fails a check rather
+# than arriving unnoticed.
+
+[licenses]
+# Every license below is permissive and compatible with shipping cmakedb
+# under either arm of its own dual license. Keep this list minimal: an
+# entry nothing matches is reported as an unmatched allowance.
+allow = [
+    "Apache-2.0",
+    "MIT",
+    "Unicode-3.0", # ICU data in the idna/url chain
+    "Zlib",
+]
+
+# cargo-deny accepts a crate when *any* arm of its SPDX expression is
+# allowed, so electing a permissive arm is expressed by listing it above
+# and omitting the copyleft one. One crate relies on this:
+#
+#   r-efi  "MIT OR Apache-2.0 OR LGPL-2.1-or-later"  -> MIT
+#
+# It is a UEFI target dependency and is not in the build graph for any
+# platform cmakedb supports, so it ships in no release binary. Recorded
+# explicitly because a reviewer grepping the tree for "LGPL" will see it.
+
+confidence-threshold = 0.8
+
+[advisories]
+# Uses the default RustSec database; `cargo deny check advisories` fails on
+# any unignored vulnerability. Kept empty deliberately — an advisory that
+# needs silencing should be argued for in review, not hidden here.
+ignore = []
+
+[bans]
+multiple-versions = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

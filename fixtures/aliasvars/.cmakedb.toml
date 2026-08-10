@@ -1,0 +1,3 @@
+# Restrict lint to the rule under test (aliasvars_e2e.rs).
+[lint]
+enable = ["alias-variables"]

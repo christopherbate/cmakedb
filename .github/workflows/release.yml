@@ -1,0 +1,96 @@
+name: Release
+
+# Tag a release (e.g. `git tag v0.1.0 && git push origin v0.1.0`) to build
+# prebuilt binaries and attach them to a GitHub release.
+#
+# Targets build on *native* runners (x86_64 and arm64) rather than
+# cross-compiling: the C dependencies (tree-sitter grammar, bundled
+# SQLite) make native builds far more reliable. ubuntu-22.04
+# images keep the glibc baseline at 2.35 so the binaries run on older
+# distributions.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-22.04
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-22.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --locked -p cmakedb-cli --target ${{ matrix.target }}
+
+      - name: Smoke-test the binary
+        run: |
+          BIN=target/${{ matrix.target }}/release/cmakedb
+          $BIN --version
+          # Record + lint a real project end-to-end before shipping.
+          sudo apt-get update && sudo apt-get install -y ninja-build cmake
+          mkdir -p /tmp/smoke && cd /tmp/smoke
+          printf 'cmake_minimum_required(VERSION 3.20)\nproject(s NONE)\noption(DEAD "x" OFF)\n' > CMakeLists.txt
+          $GITHUB_WORKSPACE/$BIN record -- -S . -B build
+          $GITHUB_WORKSPACE/$BIN dead options | grep -q DEAD
+
+      - name: Package
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          NAME=cmakedb-${VERSION}-${{ matrix.target }}
+          mkdir -p dist/$NAME
+          cp target/${{ matrix.target }}/release/cmakedb dist/$NAME/
+          strip dist/$NAME/cmakedb || true
+          cp README.md dist/$NAME/
+          cp docs/user-guide.md dist/$NAME/
+          # Both arms of the dual license require the license text to
+          # accompany a binary redistribution.
+          cp LICENSE-MIT LICENSE-APACHE dist/$NAME/
+          tar -C dist -czf dist/$NAME.tar.gz $NAME
+          (cd dist && sha256sum $NAME.tar.gz > $NAME.tar.gz.sha256)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cmakedb-${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+          if-no-files-found: error
+
+  release:
+    name: publish release
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.sha256
+          generate_release_notes: true
+          draft: false

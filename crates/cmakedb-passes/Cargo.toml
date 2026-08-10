@@ -1,0 +1,16 @@
+[package]
+name = "cmakedb-passes"
+description = "L4 built-in analysis passes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+regex.workspace = true
+cmakedb-db.workspace = true
+cmakedb-syntax.workspace = true
+cmakedb-patch.workspace = true

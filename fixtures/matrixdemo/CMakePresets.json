@@ -1,0 +1,18 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "common",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+    {
+      "name": "base",
+      "inherits": "common"
+    },
+    {
+      "name": "extra",
+      "cacheVariables": { "WITH_EXTRA_READS": "ON" }
+    }
+  ]
+}

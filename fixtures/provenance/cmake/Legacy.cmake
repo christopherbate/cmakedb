@@ -1,0 +1,1 @@
+set(UNUSED_MODULE_VAR 1)

@@ -1,0 +1,18 @@
+[package]
+name = "cmakedb-record"
+description = "L2 execution recorder: wraps the real cmake, captures trace + File API"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+cmakedb-db.workspace = true
+cmakedb-patch.workspace = true
+cmakedb-syntax.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+cmakedb-db.workspace = true

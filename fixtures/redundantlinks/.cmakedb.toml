@@ -1,0 +1,3 @@
+# Restrict lint to the rule under test (redundantlinks_e2e.rs).
+[lint]
+enable = ["redundant-links"]
