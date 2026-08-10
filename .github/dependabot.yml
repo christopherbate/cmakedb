@@ -1,0 +1,22 @@
+version: 2
+
+# Dependency updates. The point is not to chase every patch release but to
+# surface security-relevant drift early: `cargo deny check advisories`
+# gates CI, so an unpatched RUSTSEC advisory turns the build red whether or
+# not anyone is watching this file.
+updates:
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Patch/minor bumps across the tree are noise individually and
+      # meaningful in aggregate; review them as one PR.
+      cargo-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

@@ -620,6 +620,12 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
 - User passes are SQL-only: the WASM host was removed before the first
   release (see M5). Extensibility beyond a single read-only SELECT per
   pass has no supported path until the WIT ABI lands.
+- MSRV is 1.95, set by `libsqlite3-sys`'s `cfg_select!` use, not by
+  anything cmakedb needs. That is a high floor for a CI tool; the
+  prebuilt binaries are the mitigation. Revisit if rusqlite's dependency
+  relaxes it. Note several dependencies declare a `rust-version` far
+  below what they actually compile on, so the floor must be re-derived by
+  testing, not read from metadata.
 - `custom-commands` config (§2.5) is parsed but not yet consumed by the
   argument parser; wrapper projects rely on `cmake_parse_arguments`
   synthesis instead (works for the common pattern, see fixtures/wrapper).

@@ -162,9 +162,21 @@ recording was made with a binary too old to support the replay.
 
 Prebuilt Linux binaries (x86_64 and aarch64) are attached to
 [GitHub releases](https://github.com/christopherbate/cmakedb/releases);
-each tarball ships the binary, this README, and the user guide, with a
-`.sha256` alongside. Otherwise `cargo build --release -p cmakedb-cli`
-(the binary lands in `target/release/cmakedb`).
+each tarball ships the binary, this README, the user guide, and both
+license files, with a `.sha256` alongside. Otherwise
+`cargo build --release -p cmakedb-cli` (the binary lands in
+`target/release/cmakedb`).
+
+Building from source needs **Rust >= 1.95** (the floor comes from
+`libsqlite3-sys`; CI pins a leg to it). The prebuilt binaries have no
+Rust requirement.
+
+**Recording an untrusted repository runs its code.** `cmakedb record`
+invokes real `cmake`, which executes the project's CMake files — no more
+and no less dangerous than configuring it by hand. Analysis commands read
+only the recording. See [SECURITY.md](SECURITY.md) for the full trust
+model, including `--no-user-passes` for linting repositories you do not
+trust.
 
 ## Development
 
@@ -174,10 +186,15 @@ cargo test  --workspace     # needs cmake (and ninja for one test) on PATH
 ```
 
 CI (GitHub Actions) gates every PR on `cargo fmt --check`,
-`clippy -D warnings`, and the full test suite across Linux x86_64,
+`clippy -D warnings`, `cargo deny check` (licenses + RUSTSEC advisories),
+a Rust 1.95 MSRV leg, and the full test suite across Linux x86_64,
 Linux arm64, and macOS; tagging `v*` builds and publishes the release
 binaries (built natively per-arch, glibc 2.35 baseline, smoke-tested by
 recording a real configure before packaging).
+
+[CONTRIBUTING.md](CONTRIBUTING.md) covers the architectural ground rules
+(never reimplement CMake; passes stay pure functions over the database;
+every detection ships with its false-positive analysis).
 
 Crate layout matches design §5.2: `cmakedb-syntax`, `cmakedb-record`,
 `cmakedb-db`, `cmakedb-passes`, `cmakedb-patch`, `cmakedb-cli`, plus

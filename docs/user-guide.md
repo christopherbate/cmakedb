@@ -1410,6 +1410,38 @@ under SQLite's `query_only` pragma so it cannot modify the recording, and
 malformed result shapes fail the lint run loudly rather than being
 dropped.
 
+#### Trust: whose code runs when
+
+User passes are supplied by the tree being analyzed, so it is worth being
+precise about what executes at each stage.
+
+| Step | Executes project code? |
+|---|---|
+| `cmakedb record` | **Yes** — it runs real `cmake`, which runs `CMakeLists.txt`, modules, and any `execute_process`/`FetchContent` they invoke |
+| `lint`, `why-*`, `dead`, `graph`, `deps`, `explain`, `diff`, `profile`, `query`, `lsp` | No — these read only the recorded database |
+| `.cmakedb/passes/*.sql` | Runs SQL from the analyzed tree, single-statement and read-only |
+| `modernize --fix` | Re-runs `cmake` to verify its own patches |
+
+Recording an untrusted repository is exactly as dangerous as configuring
+it by hand — cmakedb adds no sandbox and claims none. Do it in a
+container or throwaway VM, the same way you would treat
+`./configure && make` on unfamiliar code.
+
+Analysis is the safe part: passes are pure functions over the database
+with no filesystem or process access, so analyzing a recording of code
+you do not trust is fine. The one thing a hostile repository can still do
+is ship a user pass that makes your lint output say whatever it likes, or
+that burns CPU. To exclude them:
+
+```sh
+cmakedb lint --no-user-passes        # built-in passes only
+cmakedb matrix --no-user-passes
+```
+
+This is a command-line flag rather than a `.cmakedb.toml` setting on
+purpose: the config file lives in the repository under analysis, so a
+setting there could never be trusted to turn anything off.
+
 WASM user passes are **not currently supported**. An experimental host
 existed but was removed before the first release: it carried a full JIT
 runtime (about a third of the dependency tree) and an ABI that was always
