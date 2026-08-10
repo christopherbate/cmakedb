@@ -98,10 +98,9 @@ recorder and semantic database, every provenance/dead-code/visibility
 analysis, SARIF/JSON/text output, `diff`, config, scope-snapshot capture
 (`--capture-scopes`), the modernize codemods with the re-record
 verification loop, `cmakedb lsp`, and user SQL passes plus a VS Code
-extension — with two caveats recorded in the roadmap (WASM user passes
-are deferred, so extensibility ships as SQL passes only; the VS Code
-extension has not yet run in a live editor). The one open item is the
-hardening track's Windows /
+extension — with one caveat recorded in the roadmap (WASM user passes
+are deferred, so extensibility ships as SQL passes only). The one open
+item is the hardening track's Windows /
 case-insensitive-filesystem path audit (§6.5); fuzzing, the pinned-CMake
 version-floor CI leg, and the performance gates have all landed.
 **Windows is experimental**: its CI leg is non-blocking and prebuilt
@@ -187,10 +186,11 @@ cargo test  --workspace     # needs cmake (and ninja for one test) on PATH
 
 CI (GitHub Actions) gates every PR on `cargo fmt --check`,
 `clippy -D warnings`, `cargo deny check` (licenses + RUSTSEC advisories),
-a Rust 1.95 MSRV leg, and the full test suite across Linux x86_64,
-Linux arm64, and macOS; tagging `v*` builds and publishes the release
-binaries (built natively per-arch, glibc 2.35 baseline, smoke-tested by
-recording a real configure before packaging).
+a Rust 1.95 MSRV leg, the VS Code extension's integration suite (run
+headless in a real VS Code instance), and the full test suite across
+Linux x86_64, Linux arm64, and macOS; tagging `v*` builds and publishes
+the release binaries (built natively per-arch, glibc 2.35 baseline,
+smoke-tested by recording a real configure before packaging).
 
 [CONTRIBUTING.md](CONTRIBUTING.md) covers the architectural ground rules
 (never reimplement CMake; passes stay pure functions over the database;

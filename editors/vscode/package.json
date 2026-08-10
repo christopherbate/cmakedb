@@ -5,8 +5,18 @@
   "version": "0.1.0",
   "publisher": "cmakedb",
   "license": "MIT OR Apache-2.0",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Linters", "Programming Languages"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/christopherbate/cmakedb.git",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
   "main": "./extension.js",
   "activationEvents": [
     "workspaceContains:**/CMakeLists.txt"
@@ -54,5 +64,15 @@
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "mocha": "^11.8.0"
+  },
+  "scripts": {
+    "pretest": "node test/prepare-workspace.js",
+    "test": "vscode-test"
   }
 }

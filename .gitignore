@@ -5,3 +5,8 @@ fixtures/*/.cmakedb/
 /fuzz/corpus
 /fuzz/artifacts
 /.claude/
+editors/vscode/node_modules/
+editors/vscode/.vscode-test/
+editors/vscode/*.vsix
+# package-lock.json is intentionally NOT ignored: the extension is an
+# application, and CI's `npm ci` needs the lockfile to be reproducible.
