@@ -341,11 +341,11 @@ M4 is **complete** (including the LSP follow-ups, ticked below).
 
 ### M5 — Extensibility (design §5.3, §3.4)
 
-M5 ships as **SQL-file user passes + the editor extension**, with two
-recorded caveats: the WASM pass API is deferred (see below), and the VS
-Code extension has not been exercised in a live editor (no Node.js on the
-dev machine) — its JSON manifest is validated and the client is standard
-vscode-languageclient boilerplate.
+M5 ships as **SQL-file user passes + the editor extension**, with one
+recorded caveat: the WASM pass API is deferred (see below). The earlier
+"never run in a live editor" caveat is closed — the extension now has an
+integration suite that runs it inside a real VS Code instance, gated in
+CI (`vscode-extension` job).
 
 - [x] SQL-file user passes (this commit): `*.sql` files in
       `.cmakedb/passes/` (or `[passes] sql-dir`) run as lint passes; the
@@ -385,8 +385,15 @@ vscode-languageclient boilerplate.
       view — targets expand into link edges with visibility and origin
       `file:line` (click-to-jump), fed by `cmakedb/targets` +
       `cmakedb/edges`; the `cmakedb: Why …` command renders the full
-      propagation tree from `cmakedb/provenance`. Not yet run in a live
-      editor (see caveat above).
+      propagation tree from `cmakedb/provenance`. Exercised in a real
+      VS Code instance by `editors/vscode/test/` via `@vscode/test-cli`:
+      activation, contributed commands, a guard that the test workspace
+      really holds a recording, a live language-client round trip
+      asserting diagnostics come back, and the refresh command against a
+      running server. The workspace is staged and recorded by
+      `test/prepare-workspace.js`, which fails hard if the binary or the
+      recording is missing so the suite cannot pass vacuously. Runs
+      headless under xvfb in CI.
 
 ### Hardening (design §6.5–§6.6, not milestone-bound)
 

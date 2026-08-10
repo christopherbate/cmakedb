@@ -33,6 +33,28 @@ cargo deny check                                   # licenses + advisories
 
 `cargo deny` needs `cargo install cargo-deny --locked`.
 
+### The VS Code extension
+
+`editors/vscode/` has its own integration suite that runs the extension
+inside a real VS Code instance:
+
+```sh
+cargo build -p cmakedb-cli        # the extension drives this binary
+cd editors/vscode
+npm ci
+npm test                          # downloads VS Code on first run
+```
+
+`npm test` runs `test/prepare-workspace.js` first, which stages a fixture
+and records it. That matters: `cmakedb lsp` is post-mortem and has
+nothing to serve without a recording, so the setup fails hard rather than
+letting the suite pass against an empty server. On Linux, wrap the run in
+`xvfb-run -a` — VS Code is an Electron app and needs a display.
+
+For interactive work, `code --extensionDevelopmentPath=$PWD/editors/vscode`
+opens a second VS Code window with the extension loaded and a debugger
+attached.
+
 ## Ground rules from the architecture
 
 These are the constraints most likely to trip up a first patch. `AGENTS.md`
