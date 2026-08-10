@@ -7,10 +7,13 @@
 // the client actually reaches the server and gets results back.
 
 const assert = require("assert");
-const path = require("path");
 const vscode = require("vscode");
 
-const EXT_ID = "cmakedb.cmakedb";
+// Derived, never hardcoded: the extension id is `publisher.name`, and the
+// publisher is expected to change when a Marketplace publisher ID is
+// registered. A literal here would turn that rename into a test failure.
+const pkg = require("../package.json");
+const EXT_ID = `${pkg.publisher}.${pkg.name}`;
 
 /** Poll until `f()` returns something truthy, or fail after `ms`. */
 async function waitFor(what, ms, f) {

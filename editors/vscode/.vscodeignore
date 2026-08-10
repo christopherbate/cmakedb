@@ -1,0 +1,15 @@
+# Files excluded from the packaged .vsix. Runtime dependencies are kept;
+# devDependencies are dropped by vsce automatically.
+
+# Test scaffolding — useful in the repo, noise for users.
+test/**
+.vscode-test.mjs
+.vscode-test/**
+
+# Icon source: the generator stays in the repo, out of the package.
+images/make-icon.py
+
+# Build/packaging leftovers.
+**/*.vsix
+**/.DS_Store
+package-lock.json
