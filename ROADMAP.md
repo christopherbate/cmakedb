@@ -394,6 +394,21 @@ CI (`vscode-extension` job).
       `test/prepare-workspace.js`, which fails hard if the binary or the
       recording is missing so the suite cannot pass vacuously. Runs
       headless under xvfb in CI.
+- [ ] **Marketplace publication — deferred by decision, not blocked.**
+      The extension packages cleanly (`vsce package` → a complete .vsix
+      with icon and license text), but `publisher` is the placeholder
+      `"cmakedb"`, which is not a registered Marketplace publisher ID.
+      Publishing needs a Microsoft/Azure DevOps account, a PAT scoped to
+      *all accessible organizations* with Marketplace→Manage, and a
+      publisher ID registered at marketplace.visualstudio.com/manage.
+      Prefer a personal ID (e.g. `christopherbate`) over the product
+      name: a publisher hosts every extension you ever ship, and the
+      extension's unique id is `publisher.name`, so changing it after
+      publication orphans existing installs. Nothing in the repo depends
+      on the value — the test suite derives the id from package.json —
+      so the rename is a one-line change whenever the account exists.
+      Open VSX (`ovsx publish`) is the separate registry serving
+      VSCodium/Cursor/Gitpod, should wider reach be wanted.
 
 ### Hardening (design §6.5–§6.6, not milestone-bound)
 
@@ -627,6 +642,10 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
 - User passes are SQL-only: the WASM host was removed before the first
   release (see M5). Extensibility beyond a single read-only SELECT per
   pass has no supported path until the WIT ABI lands.
+- The VS Code extension is not published: `publisher` is the placeholder
+  `"cmakedb"`, deferred pending a Marketplace account (see M5). Install
+  it by building a .vsix locally; `vsce publish` will fail until a real
+  publisher id is registered.
 - MSRV is 1.95, set by `libsqlite3-sys`'s `cfg_select!` use, not by
   anything cmakedb needs. That is a high floor for a CI tool; the
   prebuilt binaries are the mitigation. Revisit if rusqlite's dependency
