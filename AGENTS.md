@@ -10,13 +10,15 @@ tracing**: it records a real `cmake` configure (`--trace-expand
 of every CMake file, stores the join in SQLite, and implements every
 analysis as a query over that database. `design.md` is the authoritative
 design document — section references like §4.2 in code comments point into
-it. `README.md` tracks implementation status against the design.
+it. `ROADMAP.md` is the single source of truth for implementation status
+against the design; `README.md` carries only a one-paragraph summary that
+links to it (see `docs/documentation-policy.md`).
 
 ## Build and test
 
 ```sh
 cargo build --workspace          # zero warnings expected — keep it that way
-cargo test  --workspace          # requires cmake >= 3.20 on PATH
+cargo test  --workspace          # requires cmake >= 3.25 on PATH
                                  # (one test also needs ninja; it self-skips)
 cargo fmt --check && cargo clippy --workspace --all-targets -- -D warnings
 ```

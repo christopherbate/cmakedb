@@ -14,7 +14,7 @@ same commit. Items marked (L) are large.
 
 ### Track A — Debugging & explanation UX
 
-- [x] **`cmakedb explain <file:line>`** (this commit) — "what did this
+- [x] **`cmakedb explain <file:line>`** (initial release) — "what did this
       line do?": every evaluation of the commands at that location with
       expanded values (distinct argument sets collapsed with counts),
       call-chain context, the writes/edges/requirements/targets/
@@ -23,8 +23,8 @@ same commit. Items marked (L) are large.
       edge). Never-executed lines get a clearly-labeled static AST
       context (enclosing if/loop/definition headers) instead. Text +
       versioned JSON; LLVM-validated on 100+-evaluation lines.
-- [x] **Negative provenance: `why-not`** (this commit) — `why-not links
-      <target> <lib>` / `why-not target <name>` / `why-not set <var>`.
+- [x] **Negative provenance: `why-not`** (initial release) — `why-not
+      links <target> <lib>` / `why-not target <name>` / `why-not set <var>`.
       Finds every AST site that could have produced the missing thing
       (including `add_*` wrapper calls naming the target first) and
       classifies each: guard-failed (innermost *executed* guard with
@@ -41,12 +41,13 @@ same commit. Items marked (L) are large.
       overwrite an existing cache entry in dataflow resolution
       (CacheSoft), so guard values now show the *effective* -D/preset
       value instead of the declared default.
-- [x] **`cmakedb graph`** (this commit) — dependency graph export (DOT /
-      Mermaid / JSON) with visibility-styled edges (solid/dashed/dotted),
-      `--target` forward-closure and `--path` filtering, `--no-external`,
-      and per-edge origin `file:line` in tooltips/link text/JSON. Unlike
-      `cmake --graphviz`, edges carry provenance and as-written
-      visibility. JSON is versioned (`cmakedb_graph_version: 1`).
+- [x] **`cmakedb graph`** (initial release) — dependency graph export
+      (DOT / Mermaid / JSON) with visibility-styled edges
+      (solid/dashed/dotted), `--target` forward-closure and `--path`
+      filtering, `--no-external`, and per-edge origin `file:line` in
+      tooltips/link text/JSON. Unlike `cmake --graphviz`, edges carry
+      provenance and as-written visibility. JSON is versioned
+      (`cmakedb_graph_version: 1`).
 - [ ] **`cmakedb bisect <a.db> <b.db>`** — first-divergence analysis
       between two recordings: the earliest event where the traces
       diverge, plus the dataflow chain feeding it. Turns "works in CI,
@@ -62,7 +63,7 @@ same commit. Items marked (L) are large.
 - [ ] **GitHub Action** — marketplace action wrapping record → lint →
       SARIF upload → baseline ratchet, with the prebuilt release
       binaries; turns adoption into five YAML lines.
-- [x] **`cmakedb matrix`** (this commit) — record every non-hidden
+- [x] **`cmakedb matrix`** (initial release) — record every non-hidden
       configure preset (or `--preset` selections) sequentially into
       `.cmakedb/matrix/<preset>.db`, per-preset status table, then all
       enabled lint passes on the `--also` intersection of the successful
@@ -72,7 +73,7 @@ same commit. Items marked (L) are large.
       --build-dir Y` now passes `-B` to cmake, so an explicit build dir
       actually overrides the preset's binaryDir (it previously configured
       one directory and read the File API from another).
-- [x] **Build-config SBOM: `cmakedb deps`** (this commit) — inventory
+- [x] **Build-config SBOM: `cmakedb deps`** (initial release) — inventory
       of `find_package` / `FetchContent` / `ExternalProject`
       dependencies with resolved versions, locations, pinning status
       (fetchcontent-pinning's evidence reused), and CycloneDX JSON
@@ -106,12 +107,12 @@ same commit. Items marked (L) are large.
 
 ### Track D — Profile v2
 
-- [x] **Flamegraph export** (this commit) — folded-stack output from the
-      scope tree (`cmakedb profile --flamegraph > out.folded`) for
+- [x] **Flamegraph export** (initial release) — folded-stack output from
+      the scope tree (`cmakedb profile --flamegraph > out.folded`) for
       flamegraph.pl/inferno/speedscope; values are per-scope exclusive
       microseconds (they sum to the configure span — LLVM-validated:
       9385 stacks summing to exactly the 13.04s span).
-- [x] **`cmakedb profile --compare <b.db>`** (this commit) —
+- [x] **`cmakedb profile --compare <b.db>`** (initial release) —
       configure-time regression detection between recordings: per-scope
       inclusive deltas aligned by display-normalized (kind, name), call
       counts, appeared/disappeared marking, span delta; text + versioned
@@ -148,7 +149,7 @@ intersection across every recorded preset.
 
 Requirement placement & narrowing:
 
-- [x] **Directory-command demotion** (this commit) —
+- [x] **Directory-command demotion** (initial release) —
       `include_directories`, `link_libraries`, `add_definitions`,
       `add_compile_options` at directory scope → target-scoped
       equivalents. The trace names exactly which targets were created
@@ -171,7 +172,7 @@ Requirement placement & narrowing:
       directory. Evidence: `tus`/`tu_headers` dep-file ingestion
       (documented precondition: a *built* tree). FP: generated
       headers, other-config-only headers (B1), IDE convenience paths.
-- [x] **Shadowed-requirement dedup** (this commit) — the same include
+- [x] **Shadowed-requirement dedup** (initial release) — the same include
       dir/definition reaching a target multiple ways (directory scope +
       explicit target call + transitive PUBLIC dep, one hop). CMake
       dedups the compile line, so this is invisible at build time but
@@ -184,7 +185,7 @@ Requirement placement & narrowing:
       declarations × 13 directory commands × 1406 link edges → 0
       findings, confirmed genuine by an independent SQL sweep (0 raw
       value collisions) and a planted-redundancy detection check.
-- [x] **Transitively redundant link edges** (this commit) —
+- [x] **Transitively redundant link edges** (initial release) —
       `target_link_libraries(app PRIVATE a b)` where `b` already
       arrives via `a`'s PUBLIC interface. FP: intentional static-
       archive link ordering / ODR-sensitive cases — report-only by
@@ -204,7 +205,7 @@ Variable simplification:
       resolved read → inline at the read site. Dataflow proves the
       read count; trivial-to-verify codemod. Recommended second pick
       (with aliases below): plain SQL over existing tables.
-      (this commit) Shipped report-only as the `single-use-variables`
+      (initial release) Shipped report-only as the `single-use-variables`
       built-in (note severity). LLVM-validated: 17 raw → 5 final after
       adding the unexecuted-write-target guard discovered in validation
       (the conditional-default idiom, 12/17 raw FPs); of the 5, 4 are
@@ -216,7 +217,7 @@ Variable simplification:
       replace reads with `Y`. Includes **PARENT_SCOPE round-trips**: a
       child sets a parent variable the parent only feeds back into the
       same child.
-      (this commit) Shipped report-only as the `alias-variables`
+      (initial release) Shipped report-only as the `alias-variables`
       built-in (note severity), both shapes: pure aliases plus the
       narrow `set(V ${V} PARENT_SCOPE)` no-op round-trip.
       LLVM-validated: 36 raw alias shapes → 1 finding
@@ -226,7 +227,7 @@ Variable simplification:
 - [ ] **No-op writes** — a `set()` whose value equals the dominating
       value already in effect (copy-paste config blocks); report the
       redundant sites, keep one.
-- [x] **Empty-expansion no-op calls** (this commit) — e.g.
+- [x] **Empty-expansion no-op calls** (initial release) — e.g.
       `target_link_libraries(x ${EXTRA_LIBS})` where the list expanded
       to nothing in every evaluation: dead code, or a list that was
       never populated (pairs with undefined-reads suggestions).
@@ -266,9 +267,9 @@ above; neither is milestone-bound.
 
 | Milestone | State | Commit | Summary |
 |---|---|---|---|
-| M1 Recorder + DB | done | `083c964` | record (trace+File API), §4.1 schema, scope replay + dataflow, query; LLVM-validated |
-| M2 First value | done | `083c964` | why-links / why-value / dead options; text/JSON/SARIF |
-| M3 Breadth | done | `083c964` | clobbers, scope-leaks, dead \*, overshare, diff, why-includes/flag, config, fail-on |
+| M1 Recorder + DB | done | `38f2b76` | record (trace+File API), §4.1 schema, scope replay + dataflow, query; LLVM-validated |
+| M2 First value | done | `38f2b76` | why-links / why-value / dead options; text/JSON/SARIF |
+| M3 Breadth | done | `38f2b76` | clobbers, scope-leaks, dead \*, overshare, diff, why-includes/flag, config, fail-on |
 | M4 Modernize + LSP | done | see detail below | lossless printing, patch engine, codemods + §4.6 verification loop, LSP + quickfixes |
 | M5 Extensibility | done, 2 caveats | see detail below | SQL user passes (WASM deferred), provenance LSP requests, VS Code extension |
 | Hardening | **in progress** | see detail below | Windows/case-insensitive path audit open (§6.5); fuzzing, version-floor CI, perf gates done |
@@ -288,18 +289,18 @@ M4 is **complete** (including the LSP follow-ups, ticked below).
       commit): reconstructs source byte-identically from leaf spans + gaps,
       erroring on incoherent spans; property-tested over the fixture corpus
       and edge cases (CRLF, bracket args, error-tolerant parses) (§6.3).
-- [x] **Patch engine integration** (this commit): modernize planning is a
-      pure db function (recorded file content stored in `files.content`);
-      `modernize --check` renders findings + unified diffs, `--fix`
-      applies via the hash-guarded `cmakedb-patch` model.
-- [x] **Codemods** (this commit, §4.6 steps 1–5): shared engine for
+- [x] **Patch engine integration** (initial release): modernize planning
+      is a pure db function (recorded file content stored in
+      `files.content`); `modernize --check` renders findings + unified
+      diffs, `--fix` applies via the hash-guarded `cmakedb-patch` model.
+- [x] **Codemods** (initial release, §4.6 steps 1–5): shared engine for
       `include_directories`, `add_definitions`, `add_compile_options`,
       `link_libraries` → target-scoped PRIVATE calls; affected targets
       from recorded scope/event order + File API final-state shadowing
       check; multi-evaluation and non-directory-scope calls skipped with
       notes; include dirs absolutized against the evaluating directory.
       Covered by fixtures/legacy e2e (comments/bytes preserved).
-- [x] **Verification loop** (this commit, §4.6 step 6):
+- [x] **Verification loop** (initial release, §4.6 step 6):
       `cmakedb-record::verify::apply_and_verify` re-records with the same
       build dir (cache preserves the configuration) and asserts
       target-set + resolved-requirement isomorphism
@@ -307,7 +308,7 @@ M4 is **complete** (including the LSP follow-ups, ticked below).
       and the differences are reported; on success the fresh recording
       replaces the database. Acceptance test: a graph-breaking patch is
       auto-reverted (`verification_loop_reverts_graph_breaking_patch`).
-- [x] **LSP server** (this commit, `cmakedb-lsp`, §2.4): `cmakedb lsp`
+- [x] **LSP server** (initial release, `cmakedb-lsp`, §2.4): `cmakedb lsp`
       serves stdio via tower-lsp. Diagnostics from all lint passes,
       stale-marked when the open buffer's hash differs from the
       recording; hover (precise per-line read value + write history for
@@ -316,13 +317,13 @@ M4 is **complete** (including the LSP follow-ups, ticked below).
       defs, target definition sites). Query helpers are pure db
       functions with tests. Still open: the custom `cmakedb/provenance`
       request and code actions (tracked below).
-- [x] LSP follow-ups (this commit): custom requests
+- [x] LSP follow-ups (initial release): custom requests
       `cmakedb/provenance` (full Explanation JSON, link or requirement
       kinds), `cmakedb/targets`, `cmakedb/edges` (tree-view data with
       origins); code actions offering modernize patches as quickfixes —
       byte-anchored edits convert to UTF-16 LSP positions against the
       *recorded* content and are withheld for stale buffers.
-- [x] **Scope snapshots** (this commit, §3.2 channel 2):
+- [x] **Scope snapshots** (initial release, §3.2 channel 2):
       `record --capture-scopes` (or `[record] capture-scopes`) injects a
       `CMAKE_PROJECT_INCLUDE_BEFORE` hook that hex-dumps the visible
       variable table at each `project()` call and at top-directory end
@@ -347,7 +348,7 @@ recorded caveat: the WASM pass API is deferred (see below). The earlier
 integration suite that runs it inside a real VS Code instance, gated in
 CI (`vscode-extension` job).
 
-- [x] SQL-file user passes (this commit): `*.sql` files in
+- [x] SQL-file user passes (initial release): `*.sql` files in
       `.cmakedb/passes/` (or `[passes] sql-dir`) run as lint passes; the
       SELECT must produce `file`, `line`, `message` (+ optional
       `severity`, `col`); rule id = file stem, first `--` comment is the
@@ -380,7 +381,7 @@ CI (`vscode-extension` job).
       (Track E) rather than reviving ABI v0. Removal commit also dropped
       the `[passes] wasm-dir` config key; a `.cmakedb.toml` still setting
       it now fails loudly (the section is `deny_unknown_fields`).
-- [x] Editor extension (this commit, `editors/vscode/`): language
+- [x] Editor extension (initial release, `editors/vscode/`): language
       client over `cmakedb lsp` plus the "CMake Provenance" explorer
       view — targets expand into link edges with visibility and origin
       `file:line` (click-to-jump), fed by `cmakedb/targets` +
@@ -412,27 +413,27 @@ CI (`vscode-extension` job).
 
 ### Hardening (design §6.5–§6.6, not milestone-bound)
 
-- [x] Fuzzing (this commit): seeded-mutator robustness tests run in every
-      CI job (parser never-panics + reprints losslessly over 2000 mutated
-      inputs; six malformed-trace shapes fail cleanly with full rollback;
-      snapshot parsing never panics), plus coverage-guided `cargo-fuzz`
-      targets under `fuzz/` run weekly by `fuzz.yml`. Caveat: the fuzz
-      targets themselves are nightly-only and first compile in CI (no
-      nightly toolchain on the dev machine). `record` now deletes the
-      database file on ingestion failure so a failed run can't masquerade
-      as a recording.
-- [x] Base CI (this commit): GitHub Actions gating fmt/clippy(-D
+- [x] Fuzzing (initial release): seeded-mutator robustness tests run in
+      every CI job (parser never-panics + reprints losslessly over 2000
+      mutated inputs; six malformed-trace shapes fail cleanly with full
+      rollback; snapshot parsing never panics), plus coverage-guided
+      `cargo-fuzz` targets under `fuzz/` run weekly by `fuzz.yml`.
+      Caveat: the fuzz targets themselves are nightly-only and first
+      compile in CI (no nightly toolchain on the dev machine). `record`
+      now deletes the database file on ingestion failure so a failed run
+      can't masquerade as a recording.
+- [x] Base CI (initial release): GitHub Actions gating fmt/clippy(-D
       warnings)/tests on Linux x86_64 + arm64 + macOS, and a tag-driven
       release workflow publishing prebuilt, smoke-tested Linux binaries
       for both architectures (native runners, glibc 2.35 baseline).
-- [x] CMake version floor CI (this commit): a pinned cmake 3.25.3 leg
+- [x] CMake version floor CI (initial release): a pinned cmake 3.25.3 leg
       runs the full suite (verified locally on macOS first); the main test
       jobs cover current stable. **Deviation from the design's ≥3.17**:
       the effective floor is 3.25 because the fixtures use `block()`
       (3.25) and the scope replay requires `global_frame` in the json-v1
       trace. A cmake-master leg remains open (needs a nightly-binary
       source).
-- [x] Performance (this commit): parallel AST parsing (rayon) closed the
+- [x] Performance (initial release): parallel AST parsing (rayon) closed the
       §6.6 gap — LLVM ingestion now ~50.5k events/s on the reference
       machine (was ~47k). CI enforces a floor via a portable release-mode
       throughput test (150k synthetic events, generous 10k/s floor to
@@ -468,7 +469,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
 
 #### Tier 1 — pure queries over the existing schema
 
-- [x] **`option-after-use`** (this commit) — declaration-ordering bug,
+- [x] **`option-after-use`** (initial release) — declaration-ordering bug,
       built-in pass validated on LLVM per the lifecycle (8 raw findings →
       3 excluded idioms discovered: DEFINED probes, guard-idiom
       containment, -D pre-seeds → 5 final: 2 genuine value-corruption
@@ -477,14 +478,14 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       passes -D/preset cacheVariables pre-seeds into ingestion so early
       reads of user-provided cache values resolve (replay fidelity
       improvement benefiting all passes).
-- [x] **`undefined-reads`** (this commit) — built-in, note severity,
+- [x] **`undefined-reads`** (initial release) — built-in, note severity,
       LLVM-validated: 27 raw findings → 10 after excluding the
       conditional-set-then-use idiom (a set() for the name exists in
       unexecuted AST branches — intentional optional values), all 10 the
       legitimate empty-if-unset configuration surface. Typo subclass
       carries edit-distance ≤2 "did you mean" suggestions; names with any
       recorded write are option-after-use territory and excluded.
-- [x] **`genex-in-wrong-context`** (this commit) — built-in: literal
+- [x] **`genex-in-wrong-context`** (initial release) — built-in: literal
       `$<...>` reaching commands that never evaluate genexes (`if`/
       `elseif`/`while` and `execute_process` at warning; `message`,
       `file(WRITE|APPEND|READ)`, `configure_file`, `string(COMPARE)`,
@@ -501,7 +502,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       (HandleLLVMOptions). Escaped `\$<` regex detection and
       unterminated `$<` probe idioms excluded by construction.
 
-- [x] **`duplicate-links`** (this commit) — built-in, LLVM-validated:
+- [x] **`duplicate-links`** (initial release) — built-in, LLVM-validated:
       16 raw GROUP BY (src,dst) count>1 groups → 16 final (nothing
       excluded on LLVM; the folding knobs — per-config
       `debug`/`optimized`/`general` slots recovered by re-walking the
@@ -514,14 +515,14 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       same-call redundancy notes (LLVM's component resolver emits
       duplicate items in one expanded list — true but generated, hence
       note severity + ignore-patterns as the knob).
-- [x] **`cyclic-links`** (this commit) — built-in, note severity, SCC
+- [x] **`cyclic-links`** (initial release) — built-in, note severity, SCC
       (iterative Tarjan) over real-target edges with the shortest cycle
       rendered like a why-links path and per-hop origin locations;
       imported-member and out-of-source-only cycles skipped.
       LLVM-validated: 0 findings (the component graph is a DAG —
       cross-checked with a direct SQL probe for 2-cycles/self-loops);
       positive case covered by the fixtures/linkgraph 2-cycle e2e.
-- [x] **`execute-process-unchecked`** (this commit) — built-in, note
+- [x] **`execute-process-unchecked`** (initial release) — built-in, note
       severity, `execute_process` whose `RESULT_VARIABLE` is absent or
       written-but-never-read (`COMMAND_ERROR_IS_FATAL` recognized as a
       check, `ERROR_QUIET` reported as aggravating context).
@@ -536,7 +537,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       OUTPUT_VARIABLE content, hence note severity), 2 genuine unchecked
       `cmake -E copy_if_different` housekeeping calls.
 
-- [x] **`set-cache-force`** (this commit) — built-in, LLVM-validated:
+- [x] **`set-cache-force`** (initial release) — built-in, LLVM-validated:
       12 raw FORCE events → 4 declaration sites → `INTERNAL` exemption +
       default ignore-patterns (`.*_VERSION.*` absorbs the derived
       `NINJA_VERSION` cache) → 3 final: 1 warning (`LLVM_HAVE_OPENCSD`,
@@ -544,7 +545,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       (AddLLVM's empty-docstring "cache as global" idiom, demoted by
       the empty-doc heuristic). Guard idiom (`if(NOT DEFINED X)`)
       demotes to note via AST if-chain containment.
-- [x] **`fetchcontent-pinning`** (this commit) — built-in, note
+- [x] **`fetchcontent-pinning`** (initial release) — built-in, note
       severity per the FP sketch. LLVM's llvm-subset recording contains
       zero `FetchContent_Declare`/`ExternalProject_Add` events (0 raw →
       0 final); positive/negative variants (branch tag, full-SHA pin,
@@ -552,17 +553,17 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       Distinguishes no-GIT_TAG / unpinned-GIT_TAG / URL-without-hash;
       URL+URL_HASH is recognized as pinned.
 
-- [x] **`constant-conditions`** (this commit) — built-in, note severity,
-      scoped to the sound subset of the sketch: conditions evaluated >= 3
-      times in one recording with identical expanded args *and* identical
-      resolved values (loop-/call-invariant conditions). LLVM-validated:
-      186 raw multi-evaluation identical-args nodes → 36 final after the
-      exclusions (value-level invariance since bare `if(X)` args never
-      vary textually; literal-only and never-written-name conditions;
-      foreach loop-variable reads; ignore-patterns; try_compile; plus
-      three discovered in validation: dynamic dereference of expanded
-      variable names, platform pseudo-constants, and undefined-on-every-
-      evaluation guard idioms).
+- [x] **`constant-conditions`** (initial release) — built-in, note
+      severity, scoped to the sound subset of the sketch: conditions
+      evaluated >= 3 times in one recording with identical expanded args
+      *and* identical resolved values (loop-/call-invariant conditions).
+      LLVM-validated: 186 raw multi-evaluation identical-args nodes → 36
+      final after the exclusions (value-level invariance since bare
+      `if(X)` args never vary textually; literal-only and
+      never-written-name conditions; foreach loop-variable reads;
+      ignore-patterns; try_compile; plus three discovered in validation:
+      dynamic dereference of expanded variable names, platform
+      pseudo-constants, and undefined-on-every-evaluation guard idioms).
       Single-evaluation dead-branch claims are deliberately out of scope:
       the `--also` intersection keys on (rule, file, line) without
       observed values, so they would intersect wrongly across recordings
@@ -587,7 +588,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       CMake's own severity mapping (Error→error, Warning/dev/
       Deprecation→warning, policy→note). Shapes validated against real
       CMake 4.2.1 output; see the user guide's detections reference.
-- [x] **`policy-hygiene`** (this commit) — `cmake_policy(SET ... OLD)`
+- [x] **`policy-hygiene`** (initial release) — `cmake_policy(SET ... OLD)`
       as tracked tech debt, built-in warning pass with a curated ~15-entry
       policy metadata table (description + introducing version); pairs
       with the `configure-warnings` channel for unset-policy warnings and
@@ -595,7 +596,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       unchanged). LLVM-validated: 395 raw OLD-pin events → 0 findings,
       all in CMake's own try_compile scratch configures (project files
       pin only NEW there).
-- [x] **`slow-configure` profile** (this commit) — shipped as the
+- [x] **`slow-configure` profile** (initial release) — shipped as the
       `cmakedb profile` command (a report, not a lint pass, as
       planned): slowest events by self time, hottest scopes by true
       wall-clock inclusive time (opening→closing event timestamps,
@@ -604,7 +605,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       approximation is stated in the output itself; validated on the
       LLVM recording (13.04s span, config-ix / check_symbol_exists /
       try_compile dominate, as expected).
-- [x] **`env-dependence`** (this commit) — built-in, note severity.
+- [x] **`env-dependence`** (initial release) — built-in, note severity.
       Ingestion records `read_kind='env'` rows from a separate
       `env_var_refs` extractor (static_var_refs untouched — its exact
       semantics carry other passes) plus `DEFINED ENV{X}` condition
@@ -620,7 +621,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
 
 #### Tier 3 — infrastructure that multiplies every rule
 
-- [x] **Findings baseline / suppression file** (this commit) —
+- [x] **Findings baseline / suppression file** (initial release) —
       `lint --write-baseline baseline.json` snapshots the current
       findings; `lint --baseline baseline.json` reports only findings
       absent from it and `fail-on` gates that surviving set
@@ -632,7 +633,7 @@ work; several Tier 1 rules are one SELECT away from a working prototype.
       FNV-1a over rule+file+line, golden-tested so the algorithm can't
       drift) for GitHub code-scanning dedup across runs; every rule
       links its user-guide FP analysis via the rule-id anchor.
-- [x] **Per-rule severity overrides** (this commit) — `[lint.severity]
+- [x] **Per-rule severity overrides** (initial release) — `[lint.severity]
       set-cache-force = "error"` in `.cmakedb.toml` remaps a rule's
       severity after passes run; rendered output and `fail-on` both see
       the override, so teams tune the gate without forking passes.
