@@ -27,7 +27,10 @@ diagnostics are stale-marked once a file diverges from it):
   `cmakedb: Why does a target link a library?` command prints the full
   §2.2-style propagation tree.
 
-## Development install
+## Installing
+
+The extension is **not on the Marketplace** — publication is deferred
+(see ROADMAP.md). Build and install it locally:
 
 ```sh
 cd editors/vscode
