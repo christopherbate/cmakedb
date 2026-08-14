@@ -18,7 +18,7 @@ jobs:
       matrix:
         target: [parse_roundtrip, trace_ingest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
         with:
