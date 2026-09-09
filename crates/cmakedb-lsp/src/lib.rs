@@ -365,6 +365,11 @@ pub fn code_actions(
     line: i64,
     current_texts: &HashMap<String, String>,
 ) -> Result<Vec<FixAction>> {
+    let path = cmakedb_db::cmake_path_spelling(path);
+    let current_texts: HashMap<String, &String> = current_texts
+        .iter()
+        .map(|(path, text)| (cmakedb_db::cmake_path_spelling(path), text))
+        .collect();
     let source_dir = db.get_meta("source_dir")?.unwrap_or_default();
     let abs = |f: &str| {
         if Path::new(f).is_absolute() {
@@ -376,7 +381,7 @@ pub fn code_actions(
     let mut out = Vec::new();
     for finding in cmakedb_passes::modernize::plan(db, &[])? {
         let Some(fix) = &finding.fix else { continue };
-        if !cmakedb_db::cmake_path_eq(&abs(&finding.primary.file), path)
+        if !cmakedb_db::cmake_path_eq(&abs(&finding.primary.file), &path)
             || finding.primary.line != line
         {
             continue;
