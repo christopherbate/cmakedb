@@ -62,10 +62,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: editors/vscode/package-lock.json
-      # The runner's unrelated Chrome repository can briefly publish an
-      # index whose hash disagrees with its Release metadata.
-      - run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list && sudo apt-get update && sudo apt-get install -y ninja-build
-      - run: cmake --version
+      - run: cmake --version && ninja --version
       - name: Build the server the extension drives
         run: cargo build -p cmakedb-cli --locked
       - run: npm ci
@@ -87,9 +84,6 @@ jobs:
       # The test suite records real cmake configures (design §6.1): it needs
       # cmake >= 3.25 (the `global_frame` floor, pinned by the cmake-compat
       # job below) and ninja on PATH.
-      - name: Install ninja (Linux)
-        if: runner.os == 'Linux'
-        run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list && sudo apt-get update && sudo apt-get install -y ninja-build
       - name: Install ninja (macOS)
         if: runner.os == 'macOS'
         run: brew install ninja
@@ -113,14 +107,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: sudo rm -f /etc/apt/sources.list.d/google-chrome.list && sudo apt-get update && sudo apt-get install -y ninja-build
       - name: Install pinned CMake
         run: |
           curl -sL -o cmake.tar.gz \
             https://github.com/Kitware/CMake/releases/download/v${{ matrix.cmake }}/cmake-${{ matrix.cmake }}-linux-x86_64.tar.gz
           tar xzf cmake.tar.gz
           echo "$PWD/cmake-${{ matrix.cmake }}-linux-x86_64/bin" >> $GITHUB_PATH
-      - run: cmake --version
+      - run: cmake --version && ninja --version
       - run: cargo test --workspace --locked
 
   # Experimental: cmakedb has never been exercised on Windows (§6.5 path
