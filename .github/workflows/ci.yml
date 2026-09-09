@@ -13,7 +13,7 @@ jobs:
     name: fmt + clippy
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -28,7 +28,7 @@ jobs:
     name: cargo-deny (licenses + advisories)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check
@@ -40,7 +40,7 @@ jobs:
     name: msrv (rust 1.95)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.95
       - uses: Swatinem/rust-cache@v2
       - run: cargo check --workspace --locked
@@ -54,10 +54,10 @@ jobs:
     name: vscode extension
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -78,7 +78,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       # The test suite records real cmake configures (design §6.1): it needs
@@ -104,7 +104,7 @@ jobs:
       matrix:
         cmake: ["3.25.3"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Install pinned CMake
@@ -123,7 +123,7 @@ jobs:
     runs-on: windows-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: choco install ninja -y
