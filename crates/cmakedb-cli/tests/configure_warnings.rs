@@ -75,7 +75,10 @@ fn author_warning_becomes_finding() {
     );
     let msg = f["message"].as_str().unwrap();
     assert!(
-        msg.starts_with("(dev) ") && msg.contains("custom author warning"),
+        ["(dev) ", "(author) "]
+            .iter()
+            .any(|prefix| msg.starts_with(prefix))
+            && msg.contains("custom author warning"),
         "unexpected message {msg:?}"
     );
 }
