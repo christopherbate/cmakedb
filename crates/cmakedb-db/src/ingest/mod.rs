@@ -267,7 +267,7 @@ pub fn ingest(db: &mut Db, input: &IngestInput) -> Result<IngestStats> {
     // error and the whole transaction rolls back — no partial database).
     let snapshots = match &input.snapshots_path {
         Some(p) => Some((
-            p.to_string_lossy().to_string(),
+            crate::cmake_path_spelling(&p.to_string_lossy()),
             dataflow::parse_snapshots(p).context("parsing scope snapshots")?,
         )),
         None => None,
