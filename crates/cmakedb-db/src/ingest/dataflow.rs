@@ -149,9 +149,9 @@ pub fn parse_snapshots(path: &Path) -> Result<Vec<Snapshot>> {
 }
 
 fn decode_hex(hex: &str) -> String {
-    let bytes: Vec<u8> = hex
-        .as_bytes()
-        .chunks_exact(2)
+    let (pairs, _) = hex.as_bytes().as_chunks::<2>();
+    let bytes: Vec<u8> = pairs
+        .iter()
         .filter_map(|c| u8::from_str_radix(std::str::from_utf8(c).ok()?, 16).ok())
         .collect();
     String::from_utf8_lossy(&bytes).to_string()
